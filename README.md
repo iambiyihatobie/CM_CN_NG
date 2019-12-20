@@ -1,5 +1,5 @@
 # 2019-wid
-
+//
 Extracts of the [World Inequality Database](https://wid.world/).
 
 ## Content
