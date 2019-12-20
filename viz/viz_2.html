@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+<!-- Load d3.js -->
+<script src="https://d3js.org/d3.v4.js"></script>
+
+<!-- Add 2 buttons -->
+<button onclick="update(data1)">IN Data</button>
+<button onclick="update(data2)">US Data</button>
+
+<!-- Create a div where the graph will take place -->
+<div id="my_dataviz"></div>
+
+<script>
+    //Read the data
+    d3.tsv("../data/income_gini.tsv", function(data) {
+
+            data1 = data.filter(d => d.country == "IN")
+            data2 = data.filter(d => d.country == "US")
+        })
+        // set the dimensions and margins of the graph
+    var margin = {
+            top: 10,
+            right: 30,
+            bottom: 30,
+            left: 50
+        },
+        width = 800 - margin.left - margin.right,
+        height = 400 - margin.top - margin.bottom;
+
+    // append the svg object to the body of the page
+    var svg = d3.select("#my_dataviz")
+        .append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform",
+            "translate(" + margin.left + "," + margin.top + ")");
+
+    // Initialise a X axis:
+    var x = d3.scaleLinear().range([0, width]);
+    var xAxis = d3.axisBottom().scale(x);
+    svg.append("g")
+        .attr("transform", "translate(0," + height + ")")
+        .attr("class", "myXaxis")
+
+    // Initialize an Y axis
+    var y = d3.scaleLinear().range([height, 0]);
+    var yAxis = d3.axisLeft().scale(y);
+    svg.append("g")
+        .attr("class", "myYaxis")
+
+    // Create a function that takes a dataset as input and update the plot:
+    function update(data) {
+
+        // Create the X axis:
+        x.domain([d3.min(data, function(d) {
+            return d.year
+        }), d3.max(data, function(d) {
+            return d.year
+        })]);
+        svg.selectAll(".myXaxis").transition()
+            .duration(3000)
+            .call(xAxis);
+
+        // create the Y axis
+        y.domain([d3.min(data, function(d) {
+            return d.gini_index
+        }), d3.max(data, function(d) {
+            return d.gini_index
+        })]);
+        svg.selectAll(".myYaxis")
+            .transition()
+            .duration(3000)
+            .call(yAxis);
+
+        // Create a update selection: bind to the new data
+        var u = svg.selectAll(".lineTest")
+            .data([data], function(d) {
+                return d.year
+            });
+
+        // Updata the line
+        u
+            .enter()
+            .append("path")
+            .attr("class", "lineTest")
+            .merge(u)
+            .transition()
+            .duration(3000)
+            .attr("d", d3.line()
+                .x(function(d) {
+                    return x(d.year);
+                })
+                .y(function(d) {
+                    return y(d.gini_index);
+                }))
+            .attr("fill", "none")
+            .attr("stroke", "steelblue")
+            .attr("stroke-width", 2.5)
+    }
+
+    // At the beginning, I run the update function on the first dataset:
+    update(data1)
+</script>
